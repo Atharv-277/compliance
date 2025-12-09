@@ -1,86 +1,188 @@
 // src/components/Navbar.jsx
-import React from "react";
-import { NavLink, Link } from "react-router-dom";
+import React, { useState } from "react";
+import { NavLink, Link, useNavigate, useLocation } from "react-router-dom";
+import { Menu, X } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+
+// Optional: Add this to index.css for better font
+// @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
 
 export default function Navbar() {
+  const [open, setOpen] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const scrollToSection = (id) => {
+    if (location.pathname !== "/") {
+      navigate("/#" + id);
+      return;
+    }
+    const el = document.getElementById(id);
+    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
+  const links = [
+    { name: "Home", to: "/", type: "link" },
+    { name: "Features", id: "features", type: "scroll" },
+    { name: "How It Works", id: "how-it-works", type: "scroll" },
+    { name: "About", to: "/about", type: "link" },
+  ];
+
+  const navItem = "px-3 py-2 rounded-md font-medium transition-all duration-200 relative";
+  const navBase = "text-gray-700 hover:text-gray-900 hover:scale-[1.03]";
+
+  const menuVariants = {
+    hidden: { opacity: 0, height: 0 },
+    visible: {
+      opacity: 1,
+      height: "auto",
+      transition: { when: "beforeChildren", staggerChildren: 0.04 },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: -6 },
+    visible: { opacity: 1, y: 0 },
+  };
+
   return (
-    <header className="fixed top-0 left-0 w-full z-50 bg-black/95 backdrop-blur-sm border-b border-[#0f0f0f]">
-      <div className="max-w-6xl mx-auto px-6 lg:px-8 h-20 flex items-center justify-between">
-        {/* Brand */}
-        <Link to="/" className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: "linear-gradient(180deg,#ef4444,#b91c1c)" }}>
-            <span className="text-white font-extrabold">V</span>
+    <header className="w-full fixed top-0 left-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-200 shadow-sm">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+
+        {/* Logo */}
+        <Link to="/" onClick={() => setOpen(false)} className="flex items-center gap-3 group">
+          <div
+            className="w-11 h-11 rounded-full flex items-center justify-center transform transition-all duration-300 group-hover:scale-105 shadow-md"
+            style={{
+              background:
+                "conic-gradient(from 180deg at 50% 50%, #2563eb, #06b6d4, #7c3aed)",
+              backgroundSize: "200% 200%",
+              animation: "bgShift 6s ease infinite",
+            }}
+          >
+            <span className="text-white font-extrabold text-lg tracking-tight">C</span>
           </div>
 
-          <div className="hidden sm:flex flex-col leading-none">
-            <div className="text-white font-bold tracking-wide">VerifyX</div>
-            <div className="text-xs text-gray-300 -mt-1">Compliance Automation</div>
+          <div className="hidden sm:flex flex-col leading-tight">
+            <span className="text-gray-900 font-semibold tracking-tight text-base">
+              Compliance Suite
+            </span>
+            <span className="text-xs text-gray-500">KYC & AML Automation</span>
           </div>
         </Link>
 
-        {/* Desktop Links */}
-        <nav className="hidden md:flex items-center gap-6 text-sm">
-          <NavLink
-            to="/"
-            className={({ isActive }) =>
-              `px-3 py-2 rounded-md font-medium ${isActive ? "bg-white text-black" : "text-gray-200 hover:text-white/90"}`
-            }
-          >
-            Home
-          </NavLink>
-
-          <NavLink
-            to="/features/ocr"
-            className={({ isActive }) =>
-              `px-3 py-2 rounded-md font-medium ${isActive ? "bg-white text-black" : "text-gray-200 hover:text-white/90"}`
-            }
-          >
-            Features
-          </NavLink>
-
-          <NavLink
-            to="/user/dashboard"
-            className={({ isActive }) =>
-              `px-3 py-2 rounded-md font-medium ${isActive ? "bg-white text-black" : "text-gray-200 hover:text-white/90"}`
-            }
-          >
-            User
-          </NavLink>
-
-          <NavLink
-            to="/user/dashboard"
-            className={({ isActive }) =>
-              `px-3 py-2 rounded-md font-medium ${isActive ? "bg-white text-black" : "text-gray-200 hover:text-white/90"}`
-            }
-          >
-            Dashboard
-          </NavLink>
+        {/* Desktop Navigation */}
+        <nav className="hidden md:flex items-center gap-6">
+          {links.map((l) => (
+            <motion.div key={l.name} whileHover={{ y: -2 }} whileTap={{ scale: 0.98 }}>
+              {l.type === "link" ? (
+                <NavLink
+                  to={l.to}
+                  end
+                  className={({ isActive }) =>
+                    `${navItem} ${navBase} ${
+                      isActive ? "text-gray-900" : ""
+                    } before:absolute before:-bottom-1 before:left-0 before:h-[2px] before:w-0 before:bg-blue-600 before:transition-all before:duration-200 hover:before:w-full`
+                  }
+                  onClick={() => setOpen(false)}
+                >
+                  {l.name}
+                </NavLink>
+              ) : (
+                <button
+                  onClick={() => {
+                    scrollToSection(l.id);
+                    setOpen(false);
+                  }}
+                  className={`${navItem} ${navBase} before:absolute before:-bottom-1 before:left-0 before:h-[2px] before:w-0 before:bg-blue-600 before:transition-all before:duration-200 hover:before:w-full`}
+                >
+                  {l.name}
+                </button>
+              )}
+            </motion.div>
+          ))}
         </nav>
 
-        {/* Right */}
-        <div className="hidden md:flex items-center gap-4">
-          <Link
+        {/* Login Button */}
+        <div className="hidden md:flex">
+          <NavLink
             to="/login"
-            className="px-4 py-2 rounded-md font-medium text-sm bg-red-600 hover:bg-red-700 transition text-white"
+            onClick={() => setOpen(false)}
+            className="px-4 py-2 rounded-md bg-gradient-to-r from-blue-600 to-indigo-600
+            hover:from-blue-700 hover:to-indigo-700 text-white font-semibold shadow-lg
+            transform transition-all duration-200 hover:-translate-y-0.5"
           >
             Login
-          </Link>
+          </NavLink>
         </div>
 
-        {/* Mobile menu */}
-        <div className="md:hidden">
-          <details className="relative">
-            <summary className="px-3 py-2 rounded-md bg-white/5 cursor-pointer">Menu</summary>
-            <div className="absolute right-0 mt-2 w-48 rounded-md bg-black border border-gray-800 shadow-lg overflow-hidden">
-              <NavLink to="/" className="block px-4 py-2 text-sm text-gray-200 hover:bg-white/5">Home</NavLink>
-              <NavLink to="/features/ocr" className="block px-4 py-2 text-sm text-gray-200 hover:bg-white/5">Features</NavLink>
-              <NavLink to="/user/dashboard" className="block px-4 py-2 text-sm text-gray-200 hover:bg-white/5">User</NavLink>
-              <NavLink to="/user/dashboard" className="block px-4 py-2 text-sm text-gray-200 hover:bg-white/5">Dashboard</NavLink>
-              <Link to="/login" className="block px-4 py-2 text-sm text-white bg-red-600">Login</Link>
-            </div>
-          </details>
-        </div>
+        {/* Mobile Menu Button */}
+        <button
+          onClick={() => setOpen(!open)}
+          className="md:hidden p-2 rounded-md border border-gray-200 bg-white shadow-sm hover:shadow-md transition"
+        >
+          {open ? <X size={22} /> : <Menu size={22} />}
+        </button>
       </div>
+
+      {/* Mobile Dropdown Menu */}
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial="hidden"
+            animate="visible"
+            exit="hidden"
+            variants={menuVariants}
+            className="md:hidden px-4 pb-4"
+            style={{ overflow: "hidden" }}
+          >
+            <motion.div className="mt-2 rounded-md bg-white border border-gray-200 shadow-sm p-2">
+              {links.map((l) => (
+                <motion.div key={l.name} variants={itemVariants}>
+                  {l.type === "link" ? (
+                    <NavLink
+                      to={l.to}
+                      onClick={() => setOpen(false)}
+                      className="block px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 rounded-md"
+                    >
+                      {l.name}
+                    </NavLink>
+                  ) : (
+                    <button
+                      onClick={() => {
+                        scrollToSection(l.id);
+                        setOpen(false);
+                      }}
+                      className="block w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 rounded-md"
+                    >
+                      {l.name}
+                    </button>
+                  )}
+                </motion.div>
+              ))}
+
+              <div className="border-t border-gray-200 mt-2 pt-2">
+                <NavLink
+                  to="/login"
+                  onClick={() => setOpen(false)}
+                  className="block w-full text-center px-4 py-3 text-sm text-white bg-gradient-to-r from-blue-600 to-indigo-600 rounded-md shadow"
+                >
+                  Login
+                </NavLink>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Moving gradient keyframes */}
+      <style>{`
+        @keyframes bgShift {
+          0% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+          100% { background-position: 0% 50%; }
+        }
+      `}</style>
     </header>
   );
 }

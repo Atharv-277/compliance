@@ -1,12 +1,13 @@
 // src/App.jsx
 import React from "react";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 
 import Navbar from "./components/Navbar";
 
 // pages
 import Home from "./pages/Home";
 import Login from "./pages/Auth/Login";
+import About from "./pages/About";   // FIXED: correct import
 
 // user pages
 import UserDashboard from "./pages/user/Dashboard";
@@ -25,19 +26,25 @@ import RiskScoring from "./pages/Features/RiskScoring";
 
 export default function App() {
   return (
-    <div className="w-full min-h-screen bg-black text-white">
+    <div className="w-full min-h-screen bg-white text-gray-900">
       <Navbar />
 
       <main className="pt-24 px-6 lg:px-12 pb-12">
         <Routes>
           <Route path="/" element={<Home />} />
 
+          {/* FIXED ABOUT PAGE ROUTE */}
+          <Route path="/about" element={<About />} />
+
           <Route path="/login" element={<Login />} />
 
+          {/* user */}
+          <Route path="/user" element={<Navigate to="/user/dashboard" replace />} />
           <Route path="/user/dashboard" element={<UserDashboard />} />
           <Route path="/user/kyc/new" element={<KycUpload />} />
           <Route path="/user/kyc/:id" element={<KycDetail />} />
 
+          {/* features */}
           <Route path="/features/document-recognition" element={<DocumentRecognition />} />
           <Route path="/features/ocr" element={<OCR />} />
           <Route path="/features/text-extraction" element={<TextFieldExtraction />} />
@@ -47,7 +54,7 @@ export default function App() {
           <Route path="/features/network-fraud" element={<NetworkFraud />} />
           <Route path="/features/risk-scoring" element={<RiskScoring />} />
 
-          <Route path="*" element={<Home />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
     </div>
