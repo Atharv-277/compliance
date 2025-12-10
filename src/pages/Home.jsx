@@ -150,15 +150,7 @@ export default function Home() {
                 {/* gradient overlay */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none"></div>
 
-                {/* glass info card */}
-                <div className="absolute left-6 bottom-6 bg-white/70 backdrop-blur-md border border-white/40 rounded-xl px-4 py-3 shadow-md max-w-xs animate-float">
-                  <div className="text-sm font-semibold" style={{ color: "var(--accent-2)" }}>Realtime verification</div>
-                  <div className="text-xs text-gray-700 mt-1">Face match · OCR · AML checks</div>
-                  <div className="mt-3 flex items-center gap-2">
-                    <div className="h-6 w-6 rounded-full bg-sky-500/80 flex items-center justify-center text-white text-xs">API</div>
-                    <div className="text-xs text-gray-600">Integrates in under 30 minutes</div>
-                  </div>
-                </div>
+                
               </div>
             </div>
 

@@ -1,4 +1,3 @@
-// src/App.jsx
 import React from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 
@@ -7,7 +6,7 @@ import Navbar from "./components/Navbar";
 // pages
 import Home from "./pages/Home";
 import Login from "./pages/Auth/Login";
-import About from "./pages/About";   // FIXED: correct import
+import About from "./pages/About";
 
 // user pages
 import UserDashboard from "./pages/user/Dashboard";
@@ -24,6 +23,15 @@ import TxnClustering from "./pages/Features/TxnClustering";
 import NetworkFraud from "./pages/Features/NetworkFraud";
 import RiskScoring from "./pages/Features/RiskScoring";
 
+// admin pages
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import KycList from "./pages/admin/KycList";
+import KycReview from "./pages/admin/KycReview";
+import AMLAlerts from "./pages/admin/AMLAlerts";
+import Rules from "./pages/admin/Rules";
+import Reports from "./pages/admin/Reports";
+import AuditLogs from "./pages/admin/AuditLogs";
+
 export default function App() {
   return (
     <div className="w-full min-h-screen bg-white text-gray-900">
@@ -31,17 +39,17 @@ export default function App() {
 
       <main className="pt-24 px-6 lg:px-12 pb-12">
         <Routes>
+
+          {/* general */}
           <Route path="/" element={<Home />} />
-
-          {/* FIXED ABOUT PAGE ROUTE */}
           <Route path="/about" element={<About />} />
-
           <Route path="/login" element={<Login />} />
 
           {/* user */}
           <Route path="/user" element={<Navigate to="/user/dashboard" replace />} />
           <Route path="/user/dashboard" element={<UserDashboard />} />
           <Route path="/user/kyc/new" element={<KycUpload />} />
+          <Route path="/user/kyc/local-draft" element={<KycDetail />} />
           <Route path="/user/kyc/:id" element={<KycDetail />} />
 
           {/* features */}
@@ -54,7 +62,19 @@ export default function App() {
           <Route path="/features/network-fraud" element={<NetworkFraud />} />
           <Route path="/features/risk-scoring" element={<RiskScoring />} />
 
+          {/* admin */}
+          <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
+          <Route path="/admin/dashboard" element={<AdminDashboard />} />
+          <Route path="/admin/kyc" element={<KycList />} />
+          <Route path="/admin/kyc/:id" element={<KycReview />} />
+          <Route path="/admin/aml" element={<AMLAlerts />} />
+          <Route path="/admin/rules" element={<Rules />} />
+          <Route path="/admin/reports" element={<Reports />} />
+          <Route path="/admin/audit" element={<AuditLogs />} />
+
+          {/* fallback */}
           <Route path="*" element={<Navigate to="/" replace />} />
+
         </Routes>
       </main>
     </div>

@@ -1,44 +1,360 @@
-// src/pages/user/KycUpload.jsx
-import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import React, { useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
+// KycUpload.jsx
 export default function KycUpload() {
-  const [fileName, setFileName] = useState("");
+  const [frontId, setFrontId] = useState(null);
+  const [backId, setBackId] = useState(null);
+  const [addressProof, setAddressProof] = useState(null);
+  const [selfie, setSelfie] = useState(null);
+  const fileInputRefs = useRef({});
   const navigate = useNavigate();
 
-  function handleFile(e) {
-    const f = e.target.files?.[0];
-    if (f) setFileName(f.name);
-  }
+  // helper: read file to dataURL for preview
+  const toDataURL = (file) => {
+    return new Promise((resolve) => {
+      if (!file) return resolve(null);
+      const reader = new FileReader();
+      reader.onload = (e) => resolve(e.target.result);
+      reader.readAsDataURL(file);
+    });
+  };
 
-  function submitMock() {
-    const mockId = Math.floor(Math.random() * 9000) + 1000;
-    navigate(`/user/kyc/${mockId}`);
-  }
+  const handleFileChange = async (e, setter) => {
+    const f = e.target.files && e.target.files[0];
+    if (!f) return;
+    // simple client-side size + type guard
+    if (f.size > 5 * 1024 * 1024) {
+      alert("File too large. Maximum 5MB allowed.");
+      e.target.value = null;
+      return;
+    }
+    const url = await toDataURL(f);
+    setter({ file: f, preview: url });
+  };
+
+  const clearFile = (setter, key) => {
+    setter(null);
+    if (key && fileInputRefs.current[key]) fileInputRefs.current[key].value = null;
+  };
+
+  // keyboard accessibility: pressing Enter on the Choose File button triggers input
+  const triggerInput = (key) => {
+    if (fileInputRefs.current[key]) fileInputRefs.current[key].click();
+  };
+
+  useEffect(() => {
+    return () => {};
+  }, []);
+
+  // ------------------ Continue to Preview (client-side preview) ------------------
+  const handleContinue = async () => {
+    try {
+      console.log("[KycUpload] handleContinue called");
+
+      if (!frontId || !selfie) {
+        alert("Please upload the required documents: ID front and selfie.");
+        return;
+      }
+
+      const draft = {
+        userName: "", // fill if you collect name
+        documents: {
+          frontUrl: frontId.preview,
+          backUrl: backId?.preview || null,
+          addressProofUrl: addressProof?.preview || null,
+          selfieUrl: selfie.preview,
+        },
+        meta: { createdAt: new Date().toISOString() },
+        status: "Draft",
+      };
+
+      // navigate to the client-side preview route we added in App.jsx
+      navigate("/user/kyc/local-draft", { state: { draft } });
+
+      setTimeout(() => {
+        console.log("[KycUpload] current path after navigate:", window.location.pathname);
+      }, 200);
+    } catch (err) {
+      console.error("[KycUpload] handleContinue error", err);
+      alert("Something went wrong when opening preview. Check console for details.");
+    }
+  };
+  // -------------------------------------------------------------------------------
 
   return (
-    <div className="max-w-3xl mx-auto">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-semibold">Upload KYC Document</h1>
-        <Link to="/user/dashboard" className="text-sm text-gray-300">← Back</Link>
-      </div>
+    <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-50 p-6">
+      <div className="max-w-7xl mx-auto">
+        <header className="mb-6">
+          <h1 className="text-3xl font-semibold text-slate-800">Upload Your KYC Documents</h1>
+          <p className="mt-1 text-slate-500">Please provide the required documents to complete verification.</p>
+        </header>
 
-      <div className="bg-[#070707] text-white p-6 rounded-2xl border border-red-500/20 shadow-sm">
-        <p className="text-sm text-gray-300 mb-4">Upload a PAN / Aadhaar / License image to run the verification demo.</p>
+        <div className="grid grid-cols-12 gap-6">
+          {/* LEFT: scrollable main column */}
+          <main className="col-span-12 lg:col-span-8">
+            <div className="h-[calc(100vh-6rem)] overflow-auto pr-4">{/* <-- scrollable area */}
 
-        <div className="space-y-4">
-          <label className="block">
-            <div className="text-xs text-gray-400 mb-2">Choose file</div>
-            <input type="file" accept="image/*,application/pdf" onChange={handleFile} className="block text-white" />
-            {fileName && <div className="text-sm mt-2 text-gray-300">Selected: {fileName}</div>}
-          </label>
+              <section className="rounded-xl shadow-sm p-6 mb-6 border-l-4 border-sky-500 bg-white/95 backdrop-blur-sm">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <h2 className="text-xl font-medium text-slate-800">Government ID — Front</h2>
+                    <p className="text-sm text-slate-500 mt-1">Upload the front side of your government-issued ID</p>
+                  </div>
+                  <span className="text-xs bg-amber-100 text-amber-800 px-3 py-1 rounded-full">Required</span>
+                </div>
 
-          <div className="flex items-center gap-3">
-            <button onClick={submitMock} className="px-4 py-2 rounded-md text-white font-semibold bg-red-600 hover:bg-red-700 transition">
-              Submit & Run
-            </button>
-            <button onClick={() => setFileName("")} className="px-3 py-2 rounded-md border border-red-500/10 text-gray-300">Clear</button>
-          </div>
+                <div className="mt-6">
+                  <label
+                    htmlFor="front"
+                    className="relative block rounded-lg border-2 border-dashed border-slate-200 bg-gradient-to-tr from-slate-50 to-sky-50 p-8 text-center cursor-pointer hover:border-sky-300"
+                    onKeyDown={(e) => { if (e.key === 'Enter') triggerInput('front'); }}
+                    tabIndex={0}
+                  >
+                    {frontId && frontId.preview ? (
+                      <div className="flex flex-col items-center gap-3">
+                        <img src={frontId.preview} alt="front preview" className="max-h-40 object-contain rounded-md shadow-sm border" />
+                        <div className="flex gap-2">
+                          <button type="button" onClick={() => triggerInput('front')} className="px-3 py-1 rounded-md border text-sm bg-white hover:bg-sky-50">Replace</button>
+                          <button type="button" onClick={() => clearFile(setFrontId, 'front')} className="px-3 py-1 rounded-md border text-sm bg-white hover:bg-red-50 text-red-700">Remove</button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col items-center text-slate-500">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 mb-3 text-sky-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 16l-4-4m0 0l4-4m-4 4h18" />
+                        </svg>
+                        <div className="text-sm font-medium text-slate-700">Drag and drop your file here</div>
+                        <div className="text-xs mt-1 text-slate-400">or click to browse (JPG, PNG, PDF — Max 5MB)</div>
+                        <div className="mt-4">
+                          <button type="button" onClick={() => triggerInput('front')} className="px-4 py-2 rounded-md bg-gradient-to-r from-sky-500 to-teal-400 text-white shadow">Choose File</button>
+                        </div>
+                      </div>
+                    )}
+
+                    <input
+                      id="front"
+                      ref={(el) => (fileInputRefs.current.front = el)}
+                      type="file"
+                      accept="image/*,application/pdf"
+                      className="hidden"
+                      onChange={(e) => handleFileChange(e, setFrontId)}
+                    />
+                  </label>
+                </div>
+              </section>
+
+              <section className="rounded-xl shadow-sm p-6 mb-6 border-l-4 border-emerald-400 bg-white/95 backdrop-blur-sm">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <h2 className="text-xl font-medium text-slate-800">Government ID — Back</h2>
+                    <p className="text-sm text-slate-500 mt-1">Upload the back side of your government-issued ID</p>
+                  </div>
+                  <span className="text-xs bg-sky-50 text-sky-700 px-3 py-1 rounded-full">Optional</span>
+                </div>
+
+                <div className="mt-6">
+                  <label className="relative block rounded-lg border-2 border-dashed border-slate-200 bg-gradient-to-tr from-slate-50 to-emerald-50 p-8 text-center cursor-pointer hover:border-emerald-300" onKeyDown={(e) => { if (e.key === 'Enter') triggerInput('back'); }} tabIndex={0}>
+                    {backId && backId.preview ? (
+                      <div className="flex flex-col items-center gap-3">
+                        <img src={backId.preview} alt="back preview" className="max-h-40 object-contain rounded-md shadow-sm border" />
+                        <div className="flex gap-2">
+                          <button type="button" onClick={() => triggerInput('back')} className="px-3 py-1 rounded-md border text-sm bg-white hover:bg-emerald-50">Replace</button>
+                          <button type="button" onClick={() => clearFile(setBackId, 'back')} className="px-3 py-1 rounded-md border text-sm bg-white hover:bg-red-50 text-red-700">Remove</button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col items-center text-slate-500">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 mb-3 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 16l-4-4m0 0l4-4m-4 4h18" />
+                        </svg>
+                        <div className="text-sm font-medium text-slate-700">Drag and drop your file here</div>
+                        <div className="text-xs mt-1 text-slate-400">or click to browse (JPG, PNG, PDF — Max 5MB)</div>
+                        <div className="mt-4">
+                          <button type="button" onClick={() => triggerInput('back')} className="px-4 py-2 rounded-md bg-white border shadow-sm">Choose File</button>
+                        </div>
+                      </div>
+                    )}
+
+                    <input
+                      id="back"
+                      ref={(el) => (fileInputRefs.current.back = el)}
+                      type="file"
+                      accept="image/*,application/pdf"
+                      className="hidden"
+                      onChange={(e) => handleFileChange(e, setBackId)}
+                    />
+                  </label>
+                </div>
+              </section>
+
+              <section className="rounded-xl shadow-sm p-6 mb-6 border-l-4 border-yellow-400 bg-white/95 backdrop-blur-sm">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <h2 className="text-xl font-medium text-slate-800">Address Proof</h2>
+                    <p className="text-sm text-slate-500 mt-1">Upload any recent document proving your address (electricity bill, bank statement, rental agreement)</p>
+                  </div>
+                  <span className="text-xs bg-sky-50 text-sky-700 px-3 py-1 rounded-full">Optional</span>
+                </div>
+
+                <div className="mt-6">
+                  <label className="relative block rounded-lg border-2 border-dashed border-slate-200 bg-gradient-to-tr from-slate-50 to-yellow-50 p-8 text-center cursor-pointer hover:border-yellow-300" onKeyDown={(e) => { if (e.key === 'Enter') triggerInput('address'); }} tabIndex={0}>
+                    {addressProof && addressProof.preview ? (
+                      <div className="flex flex-col items-center gap-3">
+                        <img src={addressProof.preview} alt="address preview" className="max-h-40 object-contain rounded-md shadow-sm border" />
+                        <div className="flex gap-2">
+                          <button type="button" onClick={() => triggerInput('address')} className="px-3 py-1 rounded-md border text-sm bg-white hover:bg-yellow-50">Replace</button>
+                          <button type="button" onClick={() => clearFile(setAddressProof, 'address')} className="px-3 py-1 rounded-md border text-sm bg-white hover:bg-red-50 text-red-700">Remove</button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col items-center text-slate-500">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 mb-3 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 16l-4-4m0 0l4-4m-4 4h18" />
+                        </svg>
+                        <div className="text-sm font-medium text-slate-700">Drag and drop your file here</div>
+                        <div className="text-xs mt-1 text-slate-400">or click to browse (JPG, PNG, PDF — Max 5MB)</div>
+                        <div className="mt-4">
+                          <button type="button" onClick={() => triggerInput('address')} className="px-4 py-2 rounded-md bg-white border shadow-sm">Choose File</button>
+                        </div>
+                      </div>
+                    )}
+
+                    <input
+                      id="address"
+                      ref={(el) => (fileInputRefs.current.address = el)}
+                      type="file"
+                      accept="image/*,application/pdf"
+                      className="hidden"
+                      onChange={(e) => handleFileChange(e, setAddressProof)}
+                    />
+                  </label>
+
+                  <div className="mt-4 bg-slate-50 p-3 rounded-md border border-slate-100">
+                    <div className="text-sm text-slate-600">Accepted examples:</div>
+                    <div className="mt-2 flex gap-2 flex-wrap">
+                      <span className="text-xs bg-white px-3 py-1 rounded-md border text-slate-700">Electricity Bill</span>
+                      <span className="text-xs bg-white px-3 py-1 rounded-md border text-slate-700">Bank Statement</span>
+                      <span className="text-xs bg-white px-3 py-1 rounded-md border text-slate-700">Rental Agreement</span>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              <section className="rounded-xl shadow-sm p-6 mb-6 border-l-4 border-sky-600 bg-white/95 backdrop-blur-sm">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <h2 className="text-xl font-medium text-slate-800">Selfie Photo</h2>
+                    <p className="text-sm text-slate-500 mt-1">Take a recent selfie or upload one from your device</p>
+                  </div>
+                  <span className="text-xs bg-amber-100 text-amber-800 px-3 py-1 rounded-full">Required</span>
+                </div>
+
+                <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <label className="block rounded-lg border-2 border-dashed border-slate-200 bg-gradient-to-tr from-slate-50 to-sky-50 p-6 text-center cursor-pointer hover:border-sky-300" onKeyDown={(e) => { if (e.key === 'Enter') triggerInput('selfie'); }} tabIndex={0}>
+                    {selfie && selfie.preview ? (
+                      <img src={selfie.preview} alt="selfie" className="mx-auto max-h-36 object-contain rounded-md border" />
+                    ) : (
+                      <>
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 mb-2 mx-auto text-sky-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4v16m8-8H4" />
+                        </svg>
+                        <div className="text-sm text-slate-500">Upload Selfie</div>
+                        <div className="text-xs text-slate-400 mt-1">Click or drag file</div>
+                      </>
+                    )}
+                    <input id="selfie" ref={(el) => (fileInputRefs.current.selfie = el)} type="file" accept="image/*" className="hidden" onChange={(e) => handleFileChange(e, setSelfie)} />
+                  </label>
+
+                  <div className="rounded-lg border p-4 bg-slate-50">
+                    <div className="text-sm font-medium mb-2 text-slate-700">Selfie Guidelines</div>
+                    <ul className="text-sm text-slate-600 list-disc list-inside space-y-1">
+                      <li>Face clearly visible</li>
+                      <li>Well-lit face</li>
+                      <li>Looking at camera</li>
+                      <li>No sunglasses/hats</li>
+                    </ul>
+                  </div>
+                </div>
+              </section>
+
+              <div className="flex items-center justify-between mt-4 mb-8">
+                <button type="button" className="px-4 py-2 rounded-md border bg-white text-slate-700 hover:bg-slate-50">Save Draft</button>
+                <button
+                  type="button"
+                  onClick={handleContinue}
+                  disabled={!frontId || !selfie}
+                  className={`px-4 py-2 rounded-md text-white shadow hover:opacity-95 ${
+                    !frontId || !selfie ? "bg-gray-300 cursor-not-allowed" : "bg-gradient-to-r from-sky-600 to-teal-500"
+                  }`}
+                >
+                  Continue to Preview
+                </button>
+              </div>
+
+            </div>{/* end scrollable */}
+          </main>
+
+          {/* RIGHT: sticky non-scrollable sidebar */}
+          <aside className="hidden lg:block col-span-12 lg:col-span-4">
+            <div className="sticky top-6 space-y-6">
+              <div className="rounded-xl shadow-sm p-6 border border-slate-100 bg-gradient-to-tr from-white to-sky-50">
+                <h3 className="font-medium text-lg text-slate-800 mb-3">Tips for Better Photos</h3>
+                <div className="text-sm text-slate-600 space-y-4">
+                  <div>
+                    <div className="font-medium text-slate-700">Lighting</div>
+                    <div className="mt-1">Use natural daylight or a well-lit environment. Avoid shadows on your face or documents.</div>
+                  </div>
+
+                  <div>
+                    <div className="font-medium text-slate-700">Document Clarity</div>
+                    <div className="mt-1">Ensure all text is readable. Keep documents flat and fully visible within the frame.</div>
+                  </div>
+
+                  <div>
+                    <div className="font-medium text-slate-700">Background</div>
+                    <div className="mt-1">Use a plain, neutral background. Avoid busy patterns that distract from the document.</div>
+                  </div>
+
+                  <div>
+                    <div className="font-medium text-slate-700">File Format</div>
+                    <div className="mt-1 text-slate-500">JPG, PNG, or PDF formats. Maximum file size is 5MB per document.</div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="rounded-xl shadow-sm p-6 border border-slate-100 bg-gradient-to-tr from-white to-emerald-50">
+                <h4 className="font-medium text-lg text-slate-800 mb-3">Document Examples</h4>
+                <div className="space-y-3 text-sm text-slate-600">
+                  <div className="p-3 bg-white/80 rounded-md border flex items-start gap-3">
+                    <div className="text-2xl">💡</div>
+                    <div>
+                      <div className="font-medium">Electricity Bill</div>
+                      <div className="text-xs text-slate-500">Recent utility bill with your name and address</div>
+                    </div>
+                  </div>
+
+                  <div className="p-3 bg-white/80 rounded-md border flex items-start gap-3">
+                    <div className="text-2xl">🏦</div>
+                    <div>
+                      <div className="font-medium">Bank Statement</div>
+                      <div className="text-xs text-slate-500">Recent bank statement showing your address</div>
+                    </div>
+                  </div>
+
+                  <div className="p-3 bg-white/80 rounded-md border flex items-start gap-3">
+                    <div className="text-2xl">🏠</div>
+                    <div>
+                      <div className="font-medium">Rental Agreement</div>
+                      <div className="text-xs text-slate-500">Valid lease or rental agreement document</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </aside>
+
         </div>
       </div>
     </div>
