@@ -6,6 +6,7 @@ import Navbar from "./components/Navbar";
 // pages
 import Home from "./pages/Home";
 import Login from "./pages/Auth/Login";
+import Register from "./pages/Auth/Register";
 import About from "./pages/About";
 
 // user pages
@@ -44,6 +45,7 @@ export default function App() {
           <Route path="/" element={<Home />} />
           <Route path="/about" element={<About />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
 
           {/* user */}
           <Route path="/user" element={<Navigate to="/user/dashboard" replace />} />

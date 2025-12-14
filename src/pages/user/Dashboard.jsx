@@ -3,18 +3,16 @@ import { useNavigate } from "react-router-dom";
 
 /*
   Dashboard.jsx
-  Single-file React + Tailwind dashboard for a KYC/AML compliance app.
-  Usage: drop into routes inside a Router and pass optional `user` prop.
+  Enterprise-grade KYC / AML Dashboard
 */
 
 export default function Dashboard({ user = null }) {
   const navigate = useNavigate();
 
-  // default/mock profile (replace with real API call)
   const profile = user || {
     name: "Atharv",
     lastLogin: "December 9, 2025 17:30",
-    kycStatus: "Not Submitted", // Not Submitted | Pending | Verified | Rejected
+    kycStatus: "Pending",
     riskScore: 42,
     riskCategory: "Medium",
     activities: [
@@ -25,36 +23,35 @@ export default function Dashboard({ user = null }) {
     documents: []
   };
 
-  useEffect(() => {
-    // fetch profile and set local state if needed
-  }, []);
-
-  function navigateTo(path) {
-    navigate(path);
-  }
+  useEffect(() => {}, []);
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <div className="max-w-7xl mx-auto">
-        <Header profile={profile} onUploadClick={() => navigateTo("/user/kyc/new")} />
+    <div className="min-h-screen bg-gray-50 p-8">
+      <div className="max-w-[1400px] mx-auto">
+        <Header profile={profile} onUploadClick={() => navigate("/user/kyc/new")} />
+        <MetricsStrip />
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mt-6">
-          <div className="lg:col-span-7 space-y-6">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mt-8">
+          {/* LEFT */}
+          <div className="lg:col-span-8 space-y-8">
             <KYCCard
               profile={profile}
-              onUploadClick={() => navigateTo("/user/kyc/new")}
-              onViewDetails={() => navigateTo("/user/kyc/1")}
+              onUploadClick={() => navigate("/user/kyc/new")}
+              onViewDetails={() => navigate("/user/kyc/1")}
             />
             <VerificationTimeline status={profile.kycStatus} />
-            <Notifications />
+            <ComplianceHistory />
             <ActivitiesTable activities={profile.activities} />
+            <Notifications />
           </div>
 
-          <aside className="lg:col-span-5 space-y-6">
+          {/* RIGHT */}
+          <aside className="lg:col-span-4 space-y-8">
+            <TrustLevel />
             <AMLCard score={profile.riskScore} category={profile.riskCategory} />
-            <DocumentLocker documents={profile.documents} onUpload={() => navigateTo("/user/kyc/new")} />
             <ComplianceScore score={profile.riskScore} />
-            <QuickActions onUpload={() => navigateTo("/user/kyc/new")} />
+            <DocumentLocker documents={profile.documents} onUpload={() => navigate("/user/kyc/new")} />
+            <QuickActions onUpload={() => navigate("/user/kyc/new")} />
             <SupportCard />
           </aside>
         </div>
@@ -63,54 +60,48 @@ export default function Dashboard({ user = null }) {
   );
 }
 
-/* ---------- Small UI primitives ---------- */
+/* ---------- UI Helpers ---------- */
 
-function Card({ children, className = "" }) {
-  return <section className={`bg-white p-6 rounded-2xl shadow ${className}`}>{children}</section>;
+function Card({ children }) {
+  return <section className="bg-white p-8 rounded-2xl shadow">{children}</section>;
 }
 
-function Badge({ children, variant = "neutral" }) {
-  const classes =
-    variant === "success"
-      ? "bg-green-100 text-green-700"
-      : variant === "danger"
-      ? "bg-red-100 text-red-700"
-      : variant === "warning"
-      ? "bg-yellow-100 text-yellow-800"
-      : "bg-gray-100 text-gray-700";
-
-  return <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${classes}`}>{children}</span>;
+function Badge({ children, variant }) {
+  const map = {
+    success: "bg-green-100 text-green-700",
+    danger: "bg-red-100 text-red-700",
+    warning: "bg-yellow-100 text-yellow-800",
+    neutral: "bg-gray-100 text-gray-700"
+  };
+  return <span className={`px-3 py-1 rounded-full text-sm ${map[variant]}`}>{children}</span>;
 }
 
 /* ---------- Header ---------- */
 
 function Header({ profile, onUploadClick }) {
   return (
-    <header className="flex flex-col md:flex-row items-start md:items-center justify-between bg-white p-6 rounded-2xl shadow">
-      <div className="w-full md:w-auto">
-        <h1 className="text-2xl font-semibold leading-snug">Welcome, {profile.name}</h1>
-        <p className="text-sm text-gray-500 mt-1">Here is your compliance overview</p>
-        <p className="mt-2 text-xs text-gray-400">Last login: {profile.lastLogin}</p>
+    <header className="bg-white p-8 rounded-2xl shadow flex justify-between items-center">
+      <div>
+        <h1 className="text-3xl font-semibold">Welcome, {profile.name}</h1>
+        <p className="text-gray-500 mt-1">Compliance overview & account status</p>
+        <p className="text-xs text-gray-400 mt-2">Last login: {profile.lastLogin}</p>
       </div>
 
-      <div className="mt-4 md:mt-0 flex items-center gap-4">
-        <div className="text-right">
-          <div className="text-xs text-gray-500">KYC</div>
-          <div className="mt-1">
-            <KycStatusBadge status={profile.kycStatus} />
-          </div>
+      <div className="flex items-center gap-8">
+        <div>
+          <div className="text-xs text-gray-400">KYC Status</div>
+          <KycStatusBadge status={profile.kycStatus} />
         </div>
 
-        <div className="text-right">
-          <div className="text-xs text-gray-500">Risk Score</div>
-          <div className="mt-1 text-lg font-semibold">{profile.riskScore}/100</div>
+        <div>
+          <div className="text-xs text-gray-400">Risk Score</div>
+          <div className="text-2xl font-semibold">{profile.riskScore}/100</div>
           <div className="text-xs text-gray-400">{profile.riskCategory}</div>
         </div>
 
         <button
           onClick={onUploadClick}
-          className="ml-2 inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg shadow focus:outline-none focus:ring-2 focus:ring-indigo-300"
-          aria-label="Upload KYC"
+          className="px-5 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg"
         >
           Upload KYC
         </button>
@@ -126,340 +117,272 @@ function KycStatusBadge({ status }) {
   return <Badge variant="neutral">Not Submitted</Badge>;
 }
 
+/* ---------- Metrics ---------- */
+
+function MetricsStrip() {
+  const items = [
+    { label: "Documents Uploaded", value: "4", sub: "+1 this week" },
+    { label: "KYC Completion", value: "68%", sub: "In progress" },
+    { label: "AML Flags", value: "2", sub: "Needs review" },
+    { label: "Account Health", value: "Good", sub: "Low risk" }
+  ];
+
+  return (
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-8">
+      {items.map((m, i) => (
+        <Card key={i}>
+          <div className="text-sm text-gray-500">{m.label}</div>
+          <div className="text-3xl font-semibold mt-2">{m.value}</div>
+          <div className="text-xs text-gray-400 mt-1">{m.sub}</div>
+        </Card>
+      ))}
+    </div>
+  );
+}
+
 /* ---------- KYC Card ---------- */
 
 function KYCCard({ profile, onUploadClick, onViewDetails }) {
-  const notSubmitted = profile.kycStatus === "Not Submitted";
-  const pending = profile.kycStatus === "Pending";
-  const rejected = profile.kycStatus === "Rejected";
-
   return (
     <Card>
-      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-        <div className="flex-1 min-w-0">
-          <h2 className="text-xl font-semibold">KYC Status</h2>
-          <p className="text-sm text-gray-500 mt-1">Document submission and verification status</p>
+      <h2 className="text-xl font-semibold">KYC Status</h2>
+      <p className="text-sm text-gray-500 mt-1">Submission & verification details</p>
 
-          <div className="mt-4 flex flex-wrap gap-6">
-            <div>
-              <div className="text-xs text-gray-400">Submission</div>
-              <div className="mt-1 font-medium">{profile.documents.length ? "Documents Uploaded" : "No documents"}</div>
-            </div>
-
-            <div>
-              <div className="text-xs text-gray-400">Verification</div>
-              <div className="mt-1 font-medium">{profile.kycStatus}</div>
-            </div>
-
-            {rejected && <div className="text-xs text-red-600 self-center">Rejection reason: Image blur / wrong PAN</div>}
-          </div>
+      <div className="mt-6 flex justify-between items-center">
+        <div className="space-y-1">
+          <div className="text-sm">Submission: {profile.documents.length ? "Uploaded" : "Not Uploaded"}</div>
+          <div className="text-sm">Verification: {profile.kycStatus}</div>
         </div>
 
-        <div className="flex-shrink-0 flex items-center gap-3">
-          {notSubmitted ? (
-            <button
-              onClick={onUploadClick}
-              className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-300"
-            >
-              Upload Documents
-            </button>
-          ) : (
-            <>
-              <button onClick={onViewDetails} className="px-4 py-2 border border-gray-200 rounded-lg">
-                View Details
-              </button>
-
-              {(pending || rejected) && (
-                <button
-                  onClick={onUploadClick}
-                  className="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-300"
-                >
-                  Reupload
-                </button>
-              )}
-            </>
-          )}
+        <div className="flex gap-3">
+          <button onClick={onViewDetails} className="px-4 py-2 border rounded-lg">
+            View Details
+          </button>
+          <button
+            onClick={onUploadClick}
+            className="px-4 py-2 bg-indigo-600 text-white rounded-lg"
+          >
+            Upload / Reupload
+          </button>
         </div>
       </div>
     </Card>
   );
 }
 
-/* ---------- Verification Timeline ---------- */
+/* ---------- Timeline ---------- */
 
 function VerificationTimeline({ status }) {
-  const steps = [
-    "Documents Uploaded",
-    "Identity Validation",
-    "OCR & Extraction",
-    "Face Match",
-    "Manual Review",
-    "Completed"
-  ];
-
-  // map statuses to a completed index (tweak to match your backend process)
-  const completedIndex = status === "Not Submitted" ? -1 : status === "Verified" ? steps.length - 1 : 2;
+  const progress = status === "Verified" ? 100 : status === "Pending" ? 55 : 0;
 
   return (
     <Card>
-      <h3 className="text-lg font-semibold">Verification Timeline</h3>
-      <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {steps.map((s, i) => {
-          const done = i <= completedIndex;
-          const inProgress = i === completedIndex + 1;
-          return (
-            <div key={s} className="flex items-start gap-3">
-              <div
-                className={`flex items-center justify-center w-10 h-10 rounded-full shrink-0 ${done ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"}`}
-                aria-hidden
-              >
-                {done ? (
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
-                    <path d="M20 6L9 17L4 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                ) : (
-                  <span className="text-sm">{i + 1}</span>
-                )}
-              </div>
+      <h3 className="text-xl font-semibold">Verification Timeline</h3>
 
-              <div className="min-w-0">
-                <div className="text-sm font-medium truncate">{s}</div>
-                <div className="text-xs text-gray-400">{done ? "Done" : inProgress ? "In progress" : "Pending"}</div>
-              </div>
+      <div className="mt-6">
+        <div className="flex justify-between text-xs text-gray-400 mb-2">
+          <span>Upload</span>
+          <span>Validation</span>
+          <span>OCR</span>
+          <span>Face Match</span>
+          <span>Review</span>
+          <span>Done</span>
+        </div>
+
+        <div className="h-3 bg-gray-200 rounded-full">
+          <div
+            className="h-3 bg-indigo-600 rounded-full"
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+      </div>
+    </Card>
+  );
+}
+
+/* ---------- Compliance History ---------- */
+
+function ComplianceHistory() {
+  const values = [40, 55, 60, 70, 78, 85];
+
+  return (
+    <Card>
+      <h3 className="text-xl font-semibold">Compliance History</h3>
+      <p className="text-sm text-gray-500 mt-1">Last 6 months</p>
+
+      <div className="mt-6 h-44 flex items-end gap-4">
+        {values.map((v, i) => (
+          <div key={i} className="flex-1">
+            <div className="bg-indigo-500 rounded-t" style={{ height: `${v}%` }} />
+          </div>
+        ))}
+      </div>
+    </Card>
+  );
+}
+
+/* ---------- Trust Level ---------- */
+
+function TrustLevel() {
+  return (
+    <Card>
+      <h3 className="text-xl font-semibold">Account Trust Level</h3>
+      <div className="mt-4 flex items-center gap-4">
+        <div className="text-5xl font-bold text-indigo-600">A+</div>
+        <p className="text-sm text-gray-500">
+          Based on document quality, AML history and verification success.
+        </p>
+      </div>
+    </Card>
+  );
+}
+
+/* ---------- AML ---------- */
+
+function AMLCard({ score, category }) {
+  return (
+    <Card>
+      <h3 className="text-xl font-semibold">AML Risk</h3>
+      <div className="text-3xl font-semibold mt-2">{score}/100</div>
+      <div className="text-sm text-gray-400">{category}</div>
+
+      <div className="mt-4 space-y-2">
+        {[
+          { l: "Low Risk", v: 70, c: "bg-green-500" },
+          { l: "Medium Risk", v: 20, c: "bg-yellow-500" },
+          { l: "High Risk", v: 10, c: "bg-red-500" }
+        ].map((r) => (
+          <div key={r.l}>
+            <div className="flex justify-between text-xs mb-1">
+              <span>{r.l}</span>
+              <span>{r.v}%</span>
             </div>
-          );
-        })}
+            <div className="h-2 bg-gray-200 rounded">
+              <div className={`${r.c} h-2 rounded`} style={{ width: `${r.v}%` }} />
+            </div>
+          </div>
+        ))}
       </div>
     </Card>
   );
 }
 
-/* ---------- AML Card ---------- */
+/* ---------- Others ---------- */
 
-function AMLCard({ score = 0, category = "Unknown" }) {
+function ActivitiesTable({ activities }) {
   return (
     <Card>
-      <div className="flex items-center gap-4">
-        <div className="w-28 h-28 flex items-center justify-center rounded-full bg-gray-50">
-          <Donut percent={score} size={80} />
-        </div>
-
-        <div className="flex-1 min-w-0">
-          <h3 className="text-lg font-semibold">AML Risk & Activity</h3>
-          <div className="mt-2 text-sm text-gray-500">Risk Score</div>
-          <div className="text-2xl font-semibold">{score}/100</div>
-          <div className="text-xs text-gray-400 mt-1">Category: {category}</div>
-          <div className="mt-3 text-xs text-gray-500">Recent flags: 2</div>
-          <div className="mt-3 text-xs text-indigo-600">Recommended: Update Address Proof</div>
-        </div>
-      </div>
-    </Card>
-  );
-}
-
-/* ---------- Activities Table ---------- */
-
-function ActivitiesTable({ activities = [] }) {
-  return (
-    <Card>
-      <h3 className="text-lg font-semibold">Recent Compliance Activities</h3>
-      <div className="mt-4 overflow-x-auto">
-        <table className="w-full text-left text-sm">
-          <thead className="text-xs text-gray-400 uppercase">
-            <tr>
-              <th className="py-2 pr-6">Activity</th>
-              <th className="py-2 pr-6">Status</th>
-              <th className="py-2">Date</th>
+      <h3 className="text-xl font-semibold">Recent Activities</h3>
+      <table className="w-full mt-4 text-sm">
+        <tbody>
+          {activities.map((a) => (
+            <tr key={a.id} className="border-t">
+              <td className="py-3">{a.activity}</td>
+              <td>{a.status}</td>
+              <td className="text-gray-400">{a.date}</td>
             </tr>
-          </thead>
-
-          <tbody className="divide-y">
-            {activities.map((a) => (
-              <tr key={a.id}>
-                <td className="py-3 pr-6">{a.activity}</td>
-                <td className="py-3 pr-6">
-                  <span
-                    className={`text-xs px-2 py-1 rounded ${
-                      a.status === "Completed" ? "bg-green-100 text-green-700" : a.status === "Pending" ? "bg-yellow-100 text-yellow-800" : "bg-gray-100 text-gray-700"
-                    }`}
-                  >
-                    {a.status}
-                  </span>
-                </td>
-                <td className="py-3 text-gray-500">{a.date}</td>
-              </tr>
-            ))}
-            {activities.length === 0 && (
-              <tr>
-                <td className="py-6 text-center text-gray-400" colSpan="3">No recent activities</td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+          ))}
+        </tbody>
+      </table>
     </Card>
   );
 }
-
-/* ---------- Notifications ---------- */
 
 function Notifications() {
-  const notes = [
-    { id: 1, text: "Your KYC was verified", tone: "success" },
-    { id: 2, text: "Additional documents required", tone: "warn" },
-    { id: 3, text: "High-risk transaction flagged", tone: "danger" }
-  ];
-
   return (
     <Card>
-      <h3 className="text-lg font-semibold">Notifications</h3>
-      <ul className="mt-3 space-y-2">
-        {notes.map((n) => (
-          <li key={n.id} className="flex items-center justify-between">
-            <div className="text-sm">{n.text}</div>
-            <div
-              className={`text-xs px-2 py-1 rounded ${
-                n.tone === "success" ? "bg-green-100 text-green-700" : n.tone === "warn" ? "bg-yellow-100 text-yellow-800" : "bg-red-100 text-red-700"
-              }`}
-            >
-              {n.tone}
-            </div>
-          </li>
-        ))}
+      <h3 className="text-xl font-semibold">Notifications</h3>
+      <ul className="mt-4 space-y-2 text-sm">
+        <li>Your KYC verification is in progress</li>
+        <li>Additional address proof required</li>
+        <li>AML flag raised on transaction</li>
       </ul>
     </Card>
   );
 }
 
-/* ---------- Document Locker ---------- */
-
-function DocumentLocker({ documents = [], onUpload }) {
+function DocumentLocker({ documents, onUpload }) {
   return (
     <Card>
-      <h3 className="text-lg font-semibold mb-3">Document Locker</h3>
-
-      {documents.length ? (
-        <div className="space-y-3">
-          {documents.map((d, i) => (
-            <div key={i} className="flex items-center justify-between">
-              <div>
-                <div className="font-medium">{d.name}</div>
-                <div className="text-xs text-gray-400">{d.type}</div>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <button className="px-3 py-1 border rounded">View</button>
-                <button className="px-3 py-1 border rounded">Reupload</button>
-              </div>
-            </div>
-          ))} 
-        </div>
-      ) : (
-        <div className="text-center py-6">
-          <p className="text-sm text-gray-500">No documents uploaded yet</p>
-          <button onClick={onUpload} className="mt-4 px-4 py-2 bg-indigo-600 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-300">
-            Upload KYC Documents
-          </button>
-        </div>
+      <h3 className="text-xl font-semibold">Document Locker</h3>
+      {documents.length === 0 && (
+        <button
+          onClick={onUpload}
+          className="mt-4 px-4 py-2 bg-indigo-600 text-white rounded-lg"
+        >
+          Upload Documents
+        </button>
       )}
     </Card>
   );
 }
 
-/* ---------- Compliance Score ---------- */
-
-function ComplianceScore({ score = 75 }) {
-  const identity = Math.round(score * 0.55);
-  const validity = Math.round(score * 0.3);
-  const fraud = Math.round(Math.max(0, 100 - Math.round(score * 0.15)));
-
+function ComplianceScore({ score }) {
   return (
     <Card>
-      <h3 className="text-lg font-semibold">Compliance Score</h3>
-      <div className="mt-4 flex items-center gap-4">
-        <div className="w-20 h-20 flex items-center justify-center">
-          <Donut percent={score} size={80} />
-        </div>
-
-        <div>
-          <div className="text-sm text-gray-500">Overall</div>
-          <div className="text-xl font-semibold">{score}/100</div>
-          <div className="mt-3 text-xs text-gray-500">Identity: {identity} • Validity: {validity} • Fraud: {fraud}</div>
-        </div>
-      </div>
+      <h3 className="text-xl font-semibold">Compliance Score</h3>
+      <Donut percent={score} size={120} />
     </Card>
   );
 }
-
-/* ---------- Quick Actions ---------- */
 
 function QuickActions({ onUpload }) {
   return (
     <Card>
-      <h3 className="text-lg font-semibold">Quick Actions</h3>
+      <h3 className="text-xl font-semibold">Quick Actions</h3>
       <div className="mt-4 grid grid-cols-2 gap-3">
-        <button className="px-3 py-2 border rounded">Update Profile</button>
-        <button onClick={onUpload} className="px-3 py-2 bg-indigo-600 text-white rounded">Upload New Document</button>
-        <button className="px-3 py-2 border rounded">Download Report</button>
-        <button className="px-3 py-2 border rounded">View AML Flags</button>
+        <button className="border p-2 rounded">Update Profile</button>
+        <button onClick={onUpload} className="bg-indigo-600 text-white p-2 rounded">
+          Upload Document
+        </button>
       </div>
     </Card>
   );
 }
-
-/* ---------- Support Card ---------- */
 
 function SupportCard() {
   return (
     <Card>
-      <h3 className="text-lg font-semibold">Support & Helpdesk</h3>
-      <div className="mt-3 text-sm text-gray-500">Live chat, tickets, and help articles to resolve KYC or AML issues.</div>
-
-      <div className="mt-4 flex gap-3">
-        <button className="px-3 py-2 border rounded">Open Ticket</button>
-        <button className="px-3 py-2 bg-indigo-600 text-white rounded">Start Live Chat</button>
-        <button className="px-3 py-2 border rounded">Help Articles</button>
-      </div>
+      <h3 className="text-xl font-semibold">Support</h3>
+      <p className="text-sm text-gray-500 mt-2">Need help with KYC or AML?</p>
+      <button className="mt-4 px-4 py-2 bg-indigo-600 text-white rounded">
+        Contact Support
+      </button>
     </Card>
   );
 }
 
-/* ---------- Donut (SVG) ---------- */
+/* ---------- Donut ---------- */
 
-function Donut({ percent = 65, size = 64 }) {
-  const stroke = 8;
+function Donut({ percent, size }) {
+  const stroke = 10;
   const radius = (size - stroke) / 2;
   const circumference = 2 * Math.PI * radius;
   const offset = circumference - (percent / 100) * circumference;
-  const id = useId(); // unique id for gradient
+  const id = useId();
 
   return (
-    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} role="img" aria-label={`Progress ${percent} percent`}>
+    <svg width={size} height={size}>
       <defs>
-        <linearGradient id={`g1-${id}`} x1="0%" y1="0%" x2="100%" y2="0%">
+        <linearGradient id={`g-${id}`} x1="0%" y1="0%" x2="100%" y2="0%">
           <stop offset="0%" stopColor="#6366F1" />
           <stop offset="100%" stopColor="#06B6D4" />
         </linearGradient>
       </defs>
 
-      <g transform={`translate(${size / 2}, ${size / 2})`}>
-        <circle r={radius} cx="0" cy="0" fill="none" stroke="#EEF2FF" strokeWidth={stroke} />
-        <circle
-          r={radius}
-          cx="0"
-          cy="0"
-          fill="none"
-          stroke={`url(#g1-${id})`}
-          strokeWidth={stroke}
-          strokeDasharray={circumference}
-          strokeDashoffset={offset}
-          strokeLinecap="round"
-          transform="rotate(-90)"
-        />
-        <text x="0" y="6" textAnchor="middle" fontSize="12" fontWeight="600" fill="#111827">
-          {percent}
-        </text>
-      </g>
+      <circle r={radius} cx={size / 2} cy={size / 2} fill="none" stroke="#E5E7EB" strokeWidth={stroke} />
+      <circle
+        r={radius}
+        cx={size / 2}
+        cy={size / 2}
+        fill="none"
+        stroke={`url(#g-${id})`}
+        strokeWidth={stroke}
+        strokeDasharray={circumference}
+        strokeDashoffset={offset}
+        strokeLinecap="round"
+        transform={`rotate(-90 ${size / 2} ${size / 2})`}
+      />
     </svg>
   );
 }

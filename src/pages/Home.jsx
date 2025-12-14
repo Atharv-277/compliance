@@ -98,9 +98,29 @@ export default function Home() {
               </p>
 
               <div className="mt-6 flex flex-wrap items-center gap-4">
-                <Link to="/verify" className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-sky-600 to-violet-600 text-white rounded-lg shadow-lg transform transition hover:-translate-y-1">
-                  Start Verification
-                </Link>
+                <Link
+  to="/register"
+  className="relative inline-flex items-center justify-center px-7 py-3 rounded-xl font-semibold text-white
+             bg-gradient-to-r from-sky-600 via-indigo-600 to-violet-600
+             shadow-[0_0_28px_rgba(99,102,241,0.55)]
+             hover:shadow-[0_0_45px_rgba(99,102,241,0.85)]
+             transition-all duration-300
+             hover:-translate-y-1 hover:scale-[1.04]
+             overflow-hidden group"
+>
+  <span className="relative z-10 tracking-wide">
+    Register Now
+  </span>
+
+  {/* glow pulse */}
+  <span
+    className="absolute inset-0 rounded-xl bg-gradient-to-r from-sky-500 to-violet-500
+               opacity-30 blur-xl animate-pulse"
+  />
+</Link>
+
+
+
 
                 <Link to="/demo" className="inline-flex items-center px-5 py-3 border border-gray-200 rounded-lg hover:shadow-sm">
                   Request Demo
