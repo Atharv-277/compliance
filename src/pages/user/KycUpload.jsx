@@ -9,6 +9,8 @@ export default function KycUpload() {
   const [selfie, setSelfie] = useState(null);
   const fileInputRefs = useRef({});
   const navigate = useNavigate();
+  const [videoKyc, setVideoKyc] = useState(null);
+
 
   // helper: read file to dataURL for preview
   const toDataURL = (file) => {
@@ -20,18 +22,32 @@ export default function KycUpload() {
     });
   };
 
-  const handleFileChange = async (e, setter) => {
-    const f = e.target.files && e.target.files[0];
-    if (!f) return;
-    // simple client-side size + type guard
-    if (f.size > 5 * 1024 * 1024) {
-      alert("File too large. Maximum 5MB allowed.");
-      e.target.value = null;
-      return;
-    }
-    const url = await toDataURL(f);
+  const handleFileChange = async (e, setter, type = "file") => {
+  const f = e.target.files && e.target.files[0];
+  if (!f) return;
+
+  const maxSize =
+    type === "video" ? 20 * 1024 * 1024 : 5 * 1024 * 1024;
+
+  if (f.size > maxSize) {
+    alert(
+      type === "video"
+        ? "Video too large. Maximum 20MB allowed."
+        : "File too large. Maximum 5MB allowed."
+    );
+    e.target.value = null;
+    return;
+  }
+
+  if (type === "video") {
+    const url = URL.createObjectURL(f);
     setter({ file: f, preview: url });
-  };
+    return;
+  }
+
+  const url = await toDataURL(f);
+  setter({ file: f, preview: url });
+};
 
   const clearFile = (setter, key) => {
     setter(null);
@@ -277,6 +293,96 @@ export default function KycUpload() {
                   </div>
                 </div>
               </section>
+              <section className="rounded-xl shadow-sm p-6 mb-6 border-l-4 border-purple-500 bg-white/95 backdrop-blur-sm">
+  <div className="flex items-start justify-between">
+    <div>
+      <h2 className="text-xl font-medium text-slate-800">
+        Video KYC (Optional)
+      </h2>
+      <p className="text-sm text-slate-500 mt-1">
+        Upload a short video for enhanced verification
+      </p>
+    </div>
+    <span className="text-xs bg-slate-100 text-slate-700 px-3 py-1 rounded-full">
+      Optional
+    </span>
+  </div>
+
+  <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+    <label
+      className="block rounded-lg border-2 border-dashed border-slate-200 bg-gradient-to-tr from-slate-50 to-purple-50 p-6 text-center cursor-pointer hover:border-purple-300"
+      tabIndex={0}
+      onKeyDown={(e) => { if (e.key === "Enter") triggerInput("video"); }}
+    >
+      {videoKyc ? (
+        <div className="space-y-3">
+          <video
+            src={videoKyc.preview}
+            controls
+            className="mx-auto max-h-40 rounded-md border"
+          />
+          <div className="flex justify-center gap-2">
+            <button
+              type="button"
+              onClick={() => triggerInput("video")}
+              className="px-3 py-1 rounded-md border text-sm bg-white"
+            >
+              Replace
+            </button>
+            <button
+              type="button"
+              onClick={() => clearFile(setVideoKyc, "video")}
+              className="px-3 py-1 rounded-md border text-sm bg-white text-red-600"
+            >
+              Remove
+            </button>
+          </div>
+        </div>
+      ) : (
+        <>
+          <div className="text-sm font-medium text-slate-700">
+            Upload short verification video
+          </div>
+          <div className="text-xs text-slate-400 mt-1">
+            MP4 / WebM · 5–10 seconds · Max 20MB
+          </div>
+          <div className="mt-4">
+            <button
+              type="button"
+              onClick={() => triggerInput("video")}
+              className="px-4 py-2 rounded-md bg-white border shadow-sm"
+            >
+              Choose Video
+            </button>
+          </div>
+        </>
+      )}
+
+      <input
+        ref={(el) => (fileInputRefs.current.video = el)}
+        type="file"
+        accept="video/mp4,video/webm"
+        className="hidden"
+        onChange={(e) =>
+          handleFileChange(e, setVideoKyc, "video")
+        }
+      />
+    </label>
+
+    <div className="rounded-lg border p-4 bg-slate-50">
+      <div className="text-sm font-medium mb-2 text-slate-700">
+        Video Guidelines
+      </div>
+      <ul className="text-sm text-slate-600 list-disc list-inside space-y-1">
+        <li>Look straight at camera</li>
+        <li>Blink or turn head slightly</li>
+        <li>Good lighting</li>
+        <li>No filters or masks</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
 
               <div className="flex items-center justify-between mt-4 mb-8">
                 <button type="button" className="px-4 py-2 rounded-md border bg-white text-slate-700 hover:bg-slate-50">Save Draft</button>

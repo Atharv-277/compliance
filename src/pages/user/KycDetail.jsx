@@ -51,6 +51,7 @@ export default function KycDetail({ kycId = "mock-kyc-123", isAdmin = false }) {
       ],
     };
   }
+  
   // --------------------------------------------------------
 
   useEffect(() => {
@@ -147,6 +148,24 @@ export default function KycDetail({ kycId = "mock-kyc-123", isAdmin = false }) {
     // navigate to upload route in your app (we use the route /user/kyc/new)
     if (!window.confirm("Open KYC upload to resubmit documents?")) return;
     navigate("/user/kyc/new");
+  }
+
+  async function handleSubmit() {
+    if (!window.confirm("Submit KYC for verification?")) return;
+    setActionLoading(true);
+    // TODO: Replace with real API call to submit KYC
+    await new Promise((r) => setTimeout(r, 400));
+    setKyc((p) => ({
+      ...p,
+      status: "Pending",
+      history: [
+        ...p.history,
+        { ts: new Date().toISOString(), by: "user", note: "Submitted for verification" },
+      ],
+      updatedAt: new Date().toISOString(),
+    }));
+    setActionLoading(false);
+    alert("KYC submitted successfully for verification!");
   }
 
   function openViewer(src) {
@@ -271,13 +290,18 @@ export default function KycDetail({ kycId = "mock-kyc-123", isAdmin = false }) {
                   Download audit
                 </button>
 
-                {kyc.status !== "Verified" && !isAdmin ? (
-                  <button type="button" onClick={handleResubmit} className="px-4 py-2 rounded-md bg-gradient-to-r from-sky-600 to-teal-500 text-white shadow">
-                    Resubmit documents
-                  </button>
-                ) : (
-                  <div />
-                )}
+                <div className="flex gap-3">
+                  {kyc.status !== "Verified" && !isAdmin ? (
+                    <>
+                      <button type="button" onClick={handleResubmit} className="px-4 py-2 rounded-md border border-slate-300 bg-white text-slate-700 hover:bg-slate-50">
+                        Edit documents
+                      </button>
+                      <button type="button" onClick={handleSubmit} disabled={actionLoading} className="px-6 py-2 rounded-md bg-gradient-to-r from-emerald-600 to-teal-500 text-white shadow hover:shadow-lg disabled:opacity-50">
+                        {actionLoading ? "Submitting..." : "Submit KYC"}
+                      </button>
+                    </>
+                  ) : null}
+                </div>
               </div>
             </div>
           </main>
