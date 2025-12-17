@@ -205,27 +205,19 @@ function polarToCartesian(cx, cy, r, deg) {
 /* ----------------------
    Small presentational subcomponents
    ---------------------- */
-function StatCard({ title, value, icon, trend, color = "blue" }) {
+function StatCard({ title, value, icon, trend, color = "slate" }) {
   const colorMap = {
-    blue: "bg-blue-50 border-blue-200",
-    green: "bg-green-50 border-green-200",
-    amber: "bg-amber-50 border-amber-200",
-    red: "bg-red-50 border-red-200",
-    purple: "bg-purple-50 border-purple-200",
+    slate: "bg-white border-slate-200",
   };
   
   const textColorMap = {
-    blue: "text-blue-600",
-    green: "text-green-600",
-    amber: "text-amber-600",
-    red: "text-red-600",
-    purple: "text-purple-600",
+    slate: "text-slate-700",
   };
 
   return (
-    <div className={`p-5 rounded-xl shadow-md border ${colorMap[color]} cursor-pointer hover:shadow-lg transition-all duration-300 group`}>
+    <div className={`p-5 rounded-lg shadow-sm border ${colorMap[color]} cursor-pointer hover:shadow-md transition-all duration-300 group`}>
       <div className="flex items-center justify-between mb-3">
-        <div className="text-sm font-medium text-gray-600">{title}</div>
+        <div className="text-sm font-medium text-slate-600">{title}</div>
         {icon && <span className="text-2xl opacity-50 group-hover:opacity-100 transition-opacity">{icon}</span>}
       </div>
       <div className="flex items-end justify-between">
@@ -340,12 +332,12 @@ export default function AdminDashboard() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-8">
+    <div className="min-h-screen bg-white p-8">
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
-          <p className="text-sm text-gray-600 mt-1">Welcome back! Here's your compliance overview.</p>
+          <h1 className="text-3xl font-bold text-slate-800">Admin Dashboard</h1>
+          <p className="text-sm text-slate-500 mt-1">Welcome back! Here's your compliance overview.</p>
         </div>
         <div className="flex items-center gap-4 bg-white rounded-lg p-2 shadow-sm border border-gray-200">
           <input type="search" placeholder="Search by name / case id" className="flex-1 border-0 rounded-md px-4 py-2 text-sm focus:outline-none" />
@@ -371,24 +363,24 @@ export default function AdminDashboard() {
           {/* Charts Row */}
           <div className="grid grid-cols-2 gap-6">
             {/* Submissions Line Chart */}
-            <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm hover:shadow-md transition-shadow">
+            <div className="bg-white rounded-lg border border-slate-200 p-6 shadow-sm hover:shadow-md transition-shadow">
               <div className="flex items-center justify-between mb-4">
                 <div>
-                  <div className="font-semibold text-gray-900">Submissions Trend</div>
-                  <p className="text-xs text-gray-600 mt-1">Last 30 days</p>
+                  <div className="font-semibold text-slate-800">Submissions Trend</div>
+                  <p className="text-xs text-slate-500 mt-1">Last 30 days</p>
                 </div>
                 <span className="text-2xl">📈</span>
               </div>
               <div style={{ height: 260 }}>
                 <LineSpark data={submissions} />
               </div>
-              <div className="mt-4 flex items-center gap-2 text-xs text-gray-600">
-                <span className="px-2 py-1 bg-blue-50 text-blue-700 rounded">Avg: {Math.round(submissions.reduce((s, d) => s + d.count, 0) / submissions.length)}/day</span>
+              <div className="mt-4 flex items-center gap-2 text-xs text-slate-600">
+                <span className="px-2 py-1 bg-slate-100 text-slate-700 rounded">Avg: {Math.round(submissions.reduce((s, d) => s + d.count, 0) / submissions.length)}/day</span>
               </div>
             </div>
 
             {/* Risk Distribution Donut */}
-            <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm hover:shadow-md transition-shadow">
+            <div className="bg-white rounded-lg border border-slate-200 p-6 shadow-sm hover:shadow-md transition-shadow">
               <div className="flex items-center justify-between mb-4">
                 <div>
                   <div className="font-semibold text-gray-900">Risk Distribution</div>
@@ -416,11 +408,11 @@ export default function AdminDashboard() {
           </div>
 
           {/* Top Pending Cases Bar Chart */}
-          <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm hover:shadow-md transition-shadow">
+          <div className="bg-white rounded-lg border border-slate-200 p-6 shadow-sm hover:shadow-md transition-shadow">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <div className="font-semibold text-gray-900">Top Pending Cases by Risk</div>
-                <p className="text-xs text-gray-600 mt-1">Cases requiring immediate attention</p>
+                <div className="font-semibold text-slate-800">Top Pending Cases by Risk</div>
+                <p className="text-xs text-slate-500 mt-1">Cases requiring immediate attention</p>
               </div>
               <span className="text-2xl">📊</span>
             </div>
@@ -433,17 +425,17 @@ export default function AdminDashboard() {
           </div>
 
           {/* Recent Cases */}
-          <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
+          <div className="bg-white rounded-lg border border-slate-200 p-6 shadow-sm">
             <div className="flex items-center justify-between mb-5">
               <div>
-                <div className="font-semibold text-gray-900">Recent Cases</div>
-                <p className="text-xs text-gray-600 mt-1">Latest submissions and updates</p>
+                <div className="font-semibold text-slate-800">Recent Cases</div>
+                <p className="text-xs text-slate-500 mt-1">Latest submissions and updates</p>
               </div>
               <div className="flex items-center gap-2 flex-wrap justify-end gap-2">
-                <button onClick={() => setFilter("all")} className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${filter === "all" ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-700 hover:bg-gray-200"}`}>All</button>
-                <button onClick={() => setFilter("pending")} className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${filter === "pending" ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-700 hover:bg-gray-200"}`}>Pending</button>
-                <button onClick={() => setFilter("high")} className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${filter === "high" ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-700 hover:bg-gray-200"}`}>High-Risk</button>
-                <button onClick={() => setFilter("today")} className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${filter === "today" ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-700 hover:bg-gray-200"}`}>Today</button>
+                <button onClick={() => setFilter("all")} className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${filter === "all" ? "bg-slate-600 text-white" : "bg-slate-100 text-slate-700 hover:bg-slate-200"}`}>All</button>
+                <button onClick={() => setFilter("pending")} className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${filter === "pending" ? "bg-slate-600 text-white" : "bg-slate-100 text-slate-700 hover:bg-slate-200"}`}>Pending</button>
+                <button onClick={() => setFilter("high")} className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${filter === "high" ? "bg-slate-600 text-white" : "bg-slate-100 text-slate-700 hover:bg-slate-200"}`}>High-Risk</button>
+                <button onClick={() => setFilter("today")} className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${filter === "today" ? "bg-slate-600 text-white" : "bg-slate-100 text-slate-700 hover:bg-slate-200"}`}>Today</button>
               </div>
             </div>
             <div>
@@ -452,26 +444,25 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        {/* Right column - 4 cols (sticky sidebar with internal scroll) */}
-        <div className="col-span-4">
-          <div className="sticky top-24 h-[calc(100vh-6rem)] overflow-y-auto pr-3 space-y-6 scroll-smooth" style={{ WebkitOverflowScrolling: "touch" }}>
+        {/* Right column - 4 cols (no separate scroll) */}
+        <div className="col-span-4 space-y-6">
             {/* Top 5 Pending KYC */}
-            <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
+            <div className="bg-white rounded-lg border border-slate-200 p-6 shadow-sm">
               <div className="flex items-center justify-between mb-4">
                 <div>
-                  <div className="font-semibold text-gray-900">Top 5 Pending KYC</div>
-                  <p className="text-xs text-gray-600 mt-1">Action required</p>
+                  <div className="font-semibold text-slate-800">Top 5 Pending KYC</div>
+                  <p className="text-xs text-slate-500 mt-1">Action required</p>
                 </div>
                 <span className="text-2xl">👥</span>
               </div>
               <div>
                 {data.topPendingCases.map((p, idx) => (
-                  <div key={p.id} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg mb-3 hover:bg-gray-50 transition-colors group">
+                  <div key={p.id} className="flex items-center justify-between p-3 border border-slate-200 rounded-lg mb-3 hover:bg-slate-50 transition-colors group">
                     <div className="flex items-center gap-3 flex-1">
-                      <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-sm font-semibold text-blue-600">{idx + 1}</div>
+                      <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-sm font-semibold text-slate-600">{idx + 1}</div>
                       <div>
-                        <div className="text-sm font-medium text-gray-900">{p.name}</div>
-                        <div className="text-xs text-gray-500">{p.submittedAt}</div>
+                        <div className="text-sm font-medium text-slate-800">{p.name}</div>
+                        <div className="text-xs text-slate-500">{p.submittedAt}</div>
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
@@ -480,73 +471,73 @@ export default function AdminDashboard() {
                   </div>
                 ))}
               </div>
-              <Link to="/admin/kyc" className="block text-center px-4 py-2.5 mt-4 border border-blue-300 rounded-lg text-blue-600 font-medium hover:bg-blue-50 transition-colors">View All KYC</Link>
+              <Link to="/admin/kyc" className="block text-center px-4 py-2.5 mt-4 border border-slate-300 rounded-lg text-slate-600 font-medium hover:bg-slate-50 transition-colors">View All KYC</Link>
             </div>
 
             {/* Top AML Alerts */}
-            <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
+            <div className="bg-white rounded-lg border border-slate-200 p-6 shadow-sm">
               <div className="flex items-center justify-between mb-4">
                 <div>
-                  <div className="font-semibold text-gray-900">Top AML Alerts</div>
-                  <p className="text-xs text-gray-600 mt-1">Active investigations</p>
+                  <div className="font-semibold text-slate-800">Top AML Alerts</div>
+                  <p className="text-xs text-slate-500 mt-1">Active investigations</p>
                 </div>
                 <span className="text-2xl">🚨</span>
               </div>
               <div>
                 {data.topAlerts.map((a) => <AlertItem key={a.id} alert={a} onView={onViewAlert} />)}
               </div>
-              <Link to="/admin/aml" className="block text-center px-4 py-2.5 mt-4 border border-orange-300 rounded-lg text-orange-600 font-medium hover:bg-orange-50 transition-colors">View All Alerts</Link>
+              <Link to="/admin/aml" className="block text-center px-4 py-2.5 mt-4 border border-slate-300 rounded-lg text-slate-600 font-medium hover:bg-slate-50 transition-colors">View All Alerts</Link>
             </div>
 
             {/* Quick Actions */}
-            <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl border border-blue-200 p-6 shadow-sm">
+            <div className="bg-slate-50 rounded-lg border border-slate-200 p-6 shadow-sm">
               <div className="flex items-center justify-between mb-4">
-                <div className="font-semibold text-gray-900">Quick Actions</div>
+                <div className="font-semibold text-slate-800">Quick Actions</div>
                 <span className="text-2xl">⚡</span>
               </div>
               <div className="space-y-3">
-                <button className="w-full text-left px-4 py-3 bg-white border border-blue-200 rounded-lg hover:bg-blue-50 font-medium text-sm transition-colors">🔄 Refresh Data</button>
-                <button className="w-full text-left px-4 py-3 bg-white border border-blue-200 rounded-lg hover:bg-blue-50 font-medium text-sm transition-colors">📥 Export CSV</button>
-                <button className="w-full text-left px-4 py-3 bg-white border border-blue-200 rounded-lg hover:bg-blue-50 font-medium text-sm transition-colors">📋 Create Report</button>
+                <button className="w-full text-left px-4 py-3 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 font-medium text-sm transition-colors">🔄 Refresh Data</button>
+                <button className="w-full text-left px-4 py-3 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 font-medium text-sm transition-colors">📥 Export CSV</button>
+                <button className="w-full text-left px-4 py-3 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 font-medium text-sm transition-colors">📋 Create Report</button>
               </div>
             </div>
 
             {/* Status Summary */}
-            <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
+            <div className="bg-white rounded-lg border border-slate-200 p-6 shadow-sm">
               <div className="font-semibold text-gray-900 mb-4">Status Summary</div>
               <div className="space-y-3">
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">On Track</span>
+                  <span className="text-sm text-slate-600">On Track</span>
                   <div className="flex items-center gap-2">
-                    <div className="w-20 h-2 bg-gray-200 rounded-full overflow-hidden">
+                    <div className="w-20 h-2 bg-slate-200 rounded-full overflow-hidden">
                       <div className="h-full bg-green-500" style={{ width: "75%" }}></div>
                     </div>
-                    <span className="text-sm font-semibold">75%</span>
+                    <span className="text-sm font-semibold text-slate-700">75%</span>
                   </div>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">Pending</span>
+                  <span className="text-sm text-slate-600">Pending</span>
                   <div className="flex items-center gap-2">
-                    <div className="w-20 h-2 bg-gray-200 rounded-full overflow-hidden">
+                    <div className="w-20 h-2 bg-slate-200 rounded-full overflow-hidden">
                       <div className="h-full bg-amber-500" style={{ width: "15%" }}></div>
                     </div>
-                    <span className="text-sm font-semibold">15%</span>
+                    <span className="text-sm font-semibold text-slate-700">15%</span>
                   </div>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">Issues</span>
+                  <span className="text-sm text-slate-600">Issues</span>
                   <div className="flex items-center gap-2">
-                    <div className="w-20 h-2 bg-gray-200 rounded-full overflow-hidden">
+                    <div className="w-20 h-2 bg-slate-200 rounded-full overflow-hidden">
                       <div className="h-full bg-red-500" style={{ width: "10%" }}></div>
                     </div>
-                    <span className="text-sm font-semibold">10%</span>
+                    <span className="text-sm font-semibold text-slate-700">10%</span>
                   </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
+      
 
       {/* Audit log - Full width */}
       <div className="mt-8 bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
