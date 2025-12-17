@@ -4,7 +4,6 @@ import { useNavigate } from "react-router-dom";
 // KycUpload.jsx
 export default function KycUpload() {
   const [frontId, setFrontId] = useState(null);
-  const [backId, setBackId] = useState(null);
   const [addressProof, setAddressProof] = useState(null);
   const [selfie, setSelfie] = useState(null);
   const fileInputRefs = useRef({});
@@ -68,8 +67,8 @@ export default function KycUpload() {
     try {
       console.log("[KycUpload] handleContinue called");
 
-      if (!frontId || !selfie) {
-        alert("Please upload the required documents: ID front and selfie.");
+      if (!frontId || !addressProof || !selfie) {
+        alert("Please upload all required documents: PAN/Aadhar Photo, Address Proof, and Selfie.");
         return;
       }
 
@@ -77,8 +76,7 @@ export default function KycUpload() {
         userName: "", // fill if you collect name
         documents: {
           frontUrl: frontId.preview,
-          backUrl: backId?.preview || null,
-          addressProofUrl: addressProof?.preview || null,
+          addressProofUrl: addressProof.preview,
           selfieUrl: selfie.preview,
         },
         meta: { createdAt: new Date().toISOString() },
@@ -114,8 +112,8 @@ export default function KycUpload() {
               <section className="rounded-xl shadow-sm p-6 mb-6 border-l-4 border-sky-500 bg-white/95 backdrop-blur-sm">
                 <div className="flex items-start justify-between">
                   <div>
-                    <h2 className="text-xl font-medium text-slate-800">Government ID — Front</h2>
-                    <p className="text-sm text-slate-500 mt-1">Upload the front side of your government-issued ID</p>
+                    <h2 className="text-xl font-medium text-slate-800">PAN/Aadhar Photo</h2>
+                    <p className="text-sm text-slate-500 mt-1">Upload a clear photo of your PAN or Aadhar card</p>
                   </div>
                   <span className="text-xs bg-amber-100 text-amber-800 px-3 py-1 rounded-full">Required</span>
                 </div>
@@ -160,57 +158,13 @@ export default function KycUpload() {
                 </div>
               </section>
 
-              <section className="rounded-xl shadow-sm p-6 mb-6 border-l-4 border-emerald-400 bg-white/95 backdrop-blur-sm">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <h2 className="text-xl font-medium text-slate-800">Government ID — Back</h2>
-                    <p className="text-sm text-slate-500 mt-1">Upload the back side of your government-issued ID</p>
-                  </div>
-                  <span className="text-xs bg-sky-50 text-sky-700 px-3 py-1 rounded-full">Optional</span>
-                </div>
-
-                <div className="mt-6">
-                  <label className="relative block rounded-lg border-2 border-dashed border-slate-200 bg-gradient-to-tr from-slate-50 to-emerald-50 p-8 text-center cursor-pointer hover:border-emerald-300" onKeyDown={(e) => { if (e.key === 'Enter') triggerInput('back'); }} tabIndex={0}>
-                    {backId && backId.preview ? (
-                      <div className="flex flex-col items-center gap-3">
-                        <img src={backId.preview} alt="back preview" className="max-h-40 object-contain rounded-md shadow-sm border" />
-                        <div className="flex gap-2">
-                          <button type="button" onClick={() => triggerInput('back')} className="px-3 py-1 rounded-md border text-sm bg-white hover:bg-emerald-50">Replace</button>
-                          <button type="button" onClick={() => clearFile(setBackId, 'back')} className="px-3 py-1 rounded-md border text-sm bg-white hover:bg-red-50 text-red-700">Remove</button>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="flex flex-col items-center text-slate-500">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 mb-3 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 16l-4-4m0 0l4-4m-4 4h18" />
-                        </svg>
-                        <div className="text-sm font-medium text-slate-700">Drag and drop your file here</div>
-                        <div className="text-xs mt-1 text-slate-400">or click to browse (JPG, PNG, PDF — Max 5MB)</div>
-                        <div className="mt-4">
-                          <button type="button" onClick={() => triggerInput('back')} className="px-4 py-2 rounded-md bg-white border shadow-sm">Choose File</button>
-                        </div>
-                      </div>
-                    )}
-
-                    <input
-                      id="back"
-                      ref={(el) => (fileInputRefs.current.back = el)}
-                      type="file"
-                      accept="image/*,application/pdf"
-                      className="hidden"
-                      onChange={(e) => handleFileChange(e, setBackId)}
-                    />
-                  </label>
-                </div>
-              </section>
-
               <section className="rounded-xl shadow-sm p-6 mb-6 border-l-4 border-yellow-400 bg-white/95 backdrop-blur-sm">
                 <div className="flex items-start justify-between">
                   <div>
                     <h2 className="text-xl font-medium text-slate-800">Address Proof</h2>
                     <p className="text-sm text-slate-500 mt-1">Upload any recent document proving your address (electricity bill, bank statement, rental agreement)</p>
                   </div>
-                  <span className="text-xs bg-sky-50 text-sky-700 px-3 py-1 rounded-full">Optional</span>
+                  <span className="text-xs bg-amber-100 text-amber-800 px-3 py-1 rounded-full">Required</span>
                 </div>
 
                 <div className="mt-6">
@@ -389,9 +343,9 @@ export default function KycUpload() {
                 <button
                   type="button"
                   onClick={handleContinue}
-                  disabled={!frontId || !selfie}
+                  disabled={!frontId || !addressProof || !selfie}
                   className={`px-4 py-2 rounded-md text-white shadow hover:opacity-95 ${
-                    !frontId || !selfie ? "bg-gray-300 cursor-not-allowed" : "bg-gradient-to-r from-sky-600 to-teal-500"
+                    !frontId || !addressProof || !selfie ? "bg-gray-300 cursor-not-allowed" : "bg-gradient-to-r from-sky-600 to-teal-500"
                   }`}
                 >
                   Continue to Preview

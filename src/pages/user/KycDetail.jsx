@@ -31,8 +31,8 @@ export default function KycDetail({ kycId = "mock-kyc-123", isAdmin = false }) {
       status: "Pending", // Pending | Verified | Rejected
       updatedAt: "2025-12-08T11:24:00.000Z",
       documents: {
-        frontUrl: "/assets/id-front-sample.jpg",
-        backUrl: "/assets/id-back-sample.jpg",
+        frontUrl: "/assets/pan-aadhar-sample.jpg",
+        addressProofUrl: "/assets/address-proof-sample.jpg",
         selfieUrl: "/assets/selfie-sample.jpg",
       },
       extracted: {
@@ -67,7 +67,7 @@ export default function KycDetail({ kycId = "mock-kyc-123", isAdmin = false }) {
         updatedAt: new Date().toISOString(),
         documents: {
           frontUrl: draft.documents.frontUrl,
-          backUrl: draft.documents.backUrl,
+          addressProofUrl: draft.documents.addressProofUrl,
           selfieUrl: draft.documents.selfieUrl,
         },
         extracted: draft.extracted || { name: "", dob: "", idNumber: "", address: "", rawOcrText: "" },
@@ -201,9 +201,8 @@ export default function KycDetail({ kycId = "mock-kyc-123", isAdmin = false }) {
         </header>
 
         <div className="grid grid-cols-12 gap-6">
-          {/* LEFT: scrollable main column */}
+          {/* MAIN: full width content */}
           <main className="col-span-12 lg:col-span-8">
-            <div className="h-[calc(100vh-6rem)] overflow-auto pr-4">
               {/* Documents */}
               <section className="rounded-xl shadow-sm p-6 mb-6 border-l-4 border-sky-500 bg-white/95 backdrop-blur-sm">
                 <div className="flex items-start justify-between">
@@ -215,8 +214,8 @@ export default function KycDetail({ kycId = "mock-kyc-123", isAdmin = false }) {
                 </div>
 
                 <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <DocThumb title="ID - Front" src={kyc.documents.frontUrl} onView={openViewer} />
-                  <DocThumb title="ID - Back" src={kyc.documents.backUrl} onView={openViewer} />
+                  <DocThumb title="PAN/Aadhar Photo" src={kyc.documents.frontUrl} onView={openViewer} />
+                  <DocThumb title="Address Proof" src={kyc.documents.addressProofUrl} onView={openViewer} />
                   <DocThumb title="Selfie" src={kyc.documents.selfieUrl} onView={openViewer} />
                 </div>
               </section>
@@ -303,12 +302,62 @@ export default function KycDetail({ kycId = "mock-kyc-123", isAdmin = false }) {
                   ) : null}
                 </div>
               </div>
-            </div>
+            
           </main>
 
-          {/* RIGHT: sticky summary / admin controls */}
+          {/* RIGHT: sidebar with workflow and controls */}
           <aside className="hidden lg:block col-span-12 lg:col-span-4">
             <div className="sticky top-6 space-y-6">
+              {/* Workflow Section */}
+              <div className="rounded-xl shadow-sm p-6 border border-slate-100 bg-white">
+                <h3 className="font-medium text-lg text-slate-800 mb-4">Verification Workflow</h3>
+                
+                <div className="space-y-4">
+                  {/* Progress Bar */}
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-xs text-gray-500">Progress</span>
+                      <span className="text-sm font-medium text-gray-700">{getWorkflowProgress(kyc.status)}%</span>
+                    </div>
+                    <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-slate-400 transition-all duration-500"
+                        style={{ width: `${getWorkflowProgress(kyc.status)}%` }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Workflow Steps */}
+                  <div className="space-y-3 pt-4">
+                    <WorkflowStep
+                      title="Submitted"
+                      status={kyc.status}
+                      timestamp={kyc.submittedAt}
+                      icon="✓"
+                      completed={true}
+                    />
+                    <WorkflowStep
+                      title="Under Review"
+                      status={kyc.status}
+                      timestamp={kyc.submittedAt}
+                      icon="✓"
+                      completed={true}
+                    />
+                    <WorkflowStep
+                      title={kyc.status === "Rejected" ? "Rejected" : "Verified"}
+                      status={kyc.status}
+                      timestamp={kyc.updatedAt}
+                      icon={kyc.status === "Rejected" ? "✗" : "◯"}
+                      completed={kyc.status === "Verified" || kyc.status === "Rejected"}
+                    />
+                  </div>
+
+                  {/* Estimated Time */}
+                  <div className="p-3 bg-gray-50 border border-gray-200 rounded-lg mt-4 text-sm text-gray-700">
+                    <span className="font-medium">Estimated Review Time:</span> 24-48 hours
+                  </div>
+                </div>
+              </div>
               <div className="rounded-xl shadow-sm p-6 border border-slate-100 bg-gradient-to-tr from-white to-sky-50">
                 <div className="flex items-start justify-between">
                   <div>
@@ -454,4 +503,47 @@ function Field({ label, value }) {
       <div className="mt-1 text-gray-800 font-medium">{value || <span className="text-gray-400">—</span>}</div>
     </div>
   );
+}
+
+function WorkflowStep({ title, status, timestamp, icon, completed }) {
+  const formatDate = (s) => {
+    try {
+      return new Date(s).toLocaleString();
+    } catch {
+      return s;
+    }
+  };
+
+  return (
+    <div className="flex items-start gap-3">
+      <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium border-2 ${
+        completed ? "bg-white border-slate-400 text-slate-600" : "bg-white border-slate-200 text-slate-300"
+      }`}>
+        {icon}
+      </div>
+      <div className="flex-1 pt-0.5">
+        <div className={`text-sm font-medium ${completed ? "text-slate-700" : "text-slate-400"}`}>
+          {title}
+        </div>
+        <div className="text-xs text-gray-500 mt-0.5">
+          {timestamp ? formatDate(timestamp) : "Pending"}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function getWorkflowProgress(status) {
+  switch (status) {
+    case "Draft":
+      return 25;
+    case "Pending":
+      return 50;
+    case "Verified":
+      return 100;
+    case "Rejected":
+      return 75;
+    default:
+      return 0;
+  }
 }
